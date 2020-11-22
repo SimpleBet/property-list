@@ -1,8 +1,8 @@
 name: property_list
 description: Property List
 version: 0.0.1
-author:
-homepage:
+author: Leonard Collins <leonard@afrostories.org>
+homepage: https://github.com/Afrostories/property-list
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
