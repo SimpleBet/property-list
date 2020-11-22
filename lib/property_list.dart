@@ -6,117 +6,6 @@ import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
-void main() => runApp(MyApp());
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Expandable Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: MyHomePage(),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  @override
-  State createState() {
-    return MyHomePageState();
-  }
-}
-
-class MyHomePageState extends State<MyHomePage> {
-  PropertySheetController controller = PropertySheetController();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Expandable Demo"),
-      ),
-      body: ExpandableTheme(
-        data: const ExpandableThemeData(
-          iconColor: Colors.blue,
-          useInkWell: true,
-        ),
-        child: ListView(
-          physics: const BouncingScrollPhysics(),
-          children: [
-            PropertySheet.fromMap(
-              json.decode(testData),
-              controller: controller,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class PropertySheetController {
-  final List<PropertySheetController> controllers = [];
-  final Map<String, TextEditingController> textControllers = {};
-  Map<String, Key> keyedWidgets;
-
-  Map<String, dynamic> _values = {};
-
-  String key;
-
-  Map<String, dynamic> get value {
-    controllers.forEach((controller) {
-      _values[controller.key] = controller.value;
-    });
-    textControllers.forEach((key, value) {
-      _values[key] = value.value.text;
-    });
-    return _values;
-  }
-
-  void initWith(Map<String, dynamic> map) {
-    _values = map;
-  }
-}
-
-class PropertySheetFormField extends FormField<Map<String, dynamic>> {}
-
-class PropertySwitch extends StatefulWidget {
-  final bool value;
-  final String name;
-  final PropertySheetController controller;
-
-  const PropertySwitch({Key key, this.value, this.controller, this.name})
-      : super(key: key);
-
-  @override
-  _PropertySwitchState createState() => _PropertySwitchState();
-}
-
-class _PropertySwitchState extends State<PropertySwitch> {
-  bool _value;
-
-  @override
-  void initState() {
-    super.initState();
-    _value = widget.value;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Switch(
-      value: _value,
-      onChanged: (bool value) {
-        setState(() {
-          _value = value;
-          widget.controller.value[this.widget.name] = value;
-        });
-      },
-    );
-  }
-}
-
 class PropertySheet extends StatefulWidget {
   factory PropertySheet.fromMap(Map<String, dynamic> json,
       {String title = '', PropertySheetController controller}) {
@@ -299,32 +188,63 @@ class _PropertySheetState extends State<PropertySheet> {
   }
 }
 
-const testData = '''
-{"widget": {
-    "debug": "on",
-    "enable": true,
-    "window": {
-        "title": "Sample Konfabulator Widget",
-        "name": "main_window",
-        "width": 500,
-        "height": 500
-    },
-    "image": { 
-        "src": "Images/Sun.png",
-        "name": "sun1",
-        "hOffset": 250,
-        "vOffset": 250,
-        "alignment": "center"
-    },
-    "text": {
-        "data": "Click Here",
-        "size": 36,
-        "style": "bold",
-        "name": "text1",
-        "hOffset": 250,
-        "vOffset": 100,
-        "alignment": "center",
-        "onMouseUp": "sun1.opacity = (sun1.opacity / 100) * 90;"
-    }
-}} 
-''';
+class PropertySheetController {
+  final List<PropertySheetController> controllers = [];
+  final Map<String, TextEditingController> textControllers = {};
+  Map<String, Key> keyedWidgets;
+
+  Map<String, dynamic> _values = {};
+
+  String key;
+
+  Map<String, dynamic> get value {
+    controllers.forEach((controller) {
+      _values[controller.key] = controller.value;
+    });
+    textControllers.forEach((key, value) {
+      _values[key] = value.value.text;
+    });
+    return _values;
+  }
+
+  void initWith(Map<String, dynamic> map) {
+    _values = map;
+  }
+}
+
+class PropertySheetFormField extends FormField<Map<String, dynamic>> {}
+
+class PropertySwitch extends StatefulWidget {
+  final bool value;
+  final String name;
+  final PropertySheetController controller;
+
+  const PropertySwitch({Key key, this.value, this.controller, this.name})
+      : super(key: key);
+
+  @override
+  _PropertySwitchState createState() => _PropertySwitchState();
+}
+
+class _PropertySwitchState extends State<PropertySwitch> {
+  bool _value;
+
+  @override
+  void initState() {
+    super.initState();
+    _value = widget.value;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Switch(
+      value: _value,
+      onChanged: (bool value) {
+        setState(() {
+          _value = value;
+          widget.controller.value[this.widget.name] = value;
+        });
+      },
+    );
+  }
+}
