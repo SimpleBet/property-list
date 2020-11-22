@@ -79,9 +79,9 @@ class _PropertySheetState extends State<PropertySheet> {
           );
         } else {
           var textEditingController =
-              TextEditingController(text: value.toString());
+              TextEditingController(text: value?.toString());
           controller.textControllers[key] = textEditingController;
-          controller.valueTypes[key] = value.runtimeType;
+          controller.valueTypes[key] = value?.runtimeType ?? String;
 
           valueCell = TableCell(
             child: Padding(
@@ -230,12 +230,12 @@ class PropertySheetController {
       _values[controller.key] = controller.value;
     });
     textControllers.forEach((key, value) {
-      if( valueTypes[key] == String ) {
-        _values[key] = value.value.text;
-      } else if( valueTypes[key] == int ){
+      if( valueTypes[key] == int ){
         _values[key] = int.tryParse(value.value.text);
       } else if( valueTypes[key] == double ){
         _values[key] = double.tryParse(value.value.text);
+      } else {
+        _values[key] = value.value.text;
       }
     });
     return _values;
