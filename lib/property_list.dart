@@ -7,37 +7,59 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 class PropertySheet extends StatefulWidget {
-  factory PropertySheet.fromMap(Map<String, dynamic> json,
+  final List<PropertySheet> sheets;
+
+  final List<TableRow> properties;
+
+  factory PropertySheet.fromMap(Map<String, dynamic> values,
       {String title = '', PropertySheetController controller}) {
-    List<PropertySheet> sheets = [];
-    List<TableRow> properties = [];
-    _buildItemsForMap(sheets, json, properties, controller);
+    if (controller == null) {
+      controller = PropertySheetController();
+      controller._values = values;
+    }
     return PropertySheet(
       title: title,
       controller: controller,
-      children: sheets,
-      properties: properties,
     );
   }
 
-  static _buildItemsForMap(List<PropertySheet> sheets, Map value,
+  final String title;
+  final PropertySheetController controller;
+
+  const PropertySheet(
+      {Key key,
+      this.sheets = const [],
+      this.title = '',
+      this.properties = const [],
+      this.controller})
+      : super(key: key);
+
+  @override
+  _PropertySheetState createState() => _PropertySheetState();
+}
+
+class _PropertySheetState extends State<PropertySheet> {
+  List<PropertySheet> sheets = [];
+  List<TableRow> properties = [];
+
+  updateValues(Map<String, dynamic> values) {
+    sheets = [];
+    properties = [];
+    _buildItemsForMap(sheets, values, properties, widget.controller);
+    setState(() {});
+  }
+
+  _buildItemsForMap(List<PropertySheet> sheets, Map value,
       List<TableRow> properties, PropertySheetController controller) {
-    controller.initWith(value);
     value.forEach((key, value) {
       if (value is Map) {
-        List<PropertySheet> childrenSheets = [];
-        List<TableRow> myProperties = [];
-
         PropertySheetController myController = PropertySheetController();
         myController.key = key;
+        myController._values = value;
         controller.controllers.add(myController);
-
-        _buildItemsForMap(childrenSheets, value, myProperties, myController);
 
         sheets.add(PropertySheet(
           title: key,
-          children: childrenSheets,
-          properties: myProperties,
           controller: myController,
         ));
       } else {
@@ -85,20 +107,18 @@ class PropertySheet extends StatefulWidget {
     });
   }
 
-  final List<PropertySheet> children;
-  final List<TableRow> properties;
-  final String title;
-  final PropertySheetController controller;
-
-  const PropertySheet(
-      {Key key, this.children, this.title, this.properties, this.controller})
-      : super(key: key);
+  @override
+  void initState() {
+    super.initState();
+    widget.controller._init(this);
+  }
 
   @override
-  _PropertySheetState createState() => _PropertySheetState();
-}
+  void dispose() {
+    super.dispose();
+    widget.controller.dispose();
+  }
 
-class _PropertySheetState extends State<PropertySheet> {
   @override
   Widget build(BuildContext context) {
     return ExpandableNotifier(
@@ -153,7 +173,8 @@ class _PropertySheetState extends State<PropertySheet> {
                                     Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: TextField(
-                                        controller: TextEditingController(text: json),
+                                        controller:
+                                            TextEditingController(text: json),
                                         maxLines: null,
                                         readOnly: true,
                                         decoration: null,
@@ -162,7 +183,10 @@ class _PropertySheetState extends State<PropertySheet> {
                                   ]);
                                 });
                           },
-                          child: Text("JSON", style: TextStyle(color: Colors.white),),
+                          child: Text(
+                            "JSON",
+                            style: TextStyle(color: Colors.white),
+                          ),
                         )
                       ],
                     ),
@@ -172,11 +196,11 @@ class _PropertySheetState extends State<PropertySheet> {
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     children: []
-                      ..addAll(widget.children)
+                      ..addAll(sheets)
                       ..add(Table(columnWidths: {
                         0: FlexColumnWidth(1),
                         1: FlexColumnWidth(3)
-                      }, children: widget.properties)),
+                      }, children: properties)),
                   ),
                 ),
               ),
@@ -191,11 +215,12 @@ class _PropertySheetState extends State<PropertySheet> {
 class PropertySheetController {
   final List<PropertySheetController> controllers = [];
   final Map<String, TextEditingController> textControllers = {};
-  Map<String, Key> keyedWidgets;
 
   Map<String, dynamic> _values = {};
 
   String key;
+
+  _PropertySheetState _state;
 
   Map<String, dynamic> get value {
     controllers.forEach((controller) {
@@ -207,8 +232,22 @@ class PropertySheetController {
     return _values;
   }
 
-  void initWith(Map<String, dynamic> map) {
+  initWith(Map<String, dynamic> map) {
     _values = map;
+  }
+
+  update(Map<String, dynamic> map) {
+    _values = map;
+    _state.updateValues(_values);
+  }
+
+  dispose() {
+    _state = null;
+  }
+
+  void _init(_PropertySheetState _propertySheetState) {
+    _state = _propertySheetState;
+    update(_values);
   }
 }
 

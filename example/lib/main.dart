@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Expandable Demo',
+      title: 'PropertyList Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -34,7 +34,7 @@ class MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Expandable Demo"),
+        title: Text("PropertyList Demo"),
       ),
       body: ExpandableTheme(
         data: const ExpandableThemeData(
@@ -46,8 +46,11 @@ class MyHomePageState extends State<MyHomePage> {
           children: [
             PropertySheet.fromMap(
               json.decode(testData),
-              controller: controller,
             ),
+            PropertySheet(controller: controller,),
+            RaisedButton(child: Text("Populate"), onPressed: (){
+              controller.update(json.decode(testData));
+            },)
           ],
         ),
       ),
