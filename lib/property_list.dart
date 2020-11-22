@@ -81,6 +81,7 @@ class _PropertySheetState extends State<PropertySheet> {
           var textEditingController =
               TextEditingController(text: value.toString());
           controller.textControllers[key] = textEditingController;
+          controller.valueTypes[key] = value.runtimeType;
 
           valueCell = TableCell(
             child: Padding(
@@ -222,12 +223,20 @@ class PropertySheetController {
 
   _PropertySheetState _state;
 
+  Map<String, Type> valueTypes = {};
+
   Map<String, dynamic> get value {
     controllers.forEach((controller) {
       _values[controller.key] = controller.value;
     });
     textControllers.forEach((key, value) {
-      _values[key] = value.value.text;
+      if( valueTypes[key] is String ) {
+        _values[key] = value.value.text;
+      } else if( valueTypes[key] is int ){
+        _values[key] = int.tryParse(value.value.text);
+      } else if( valueTypes[key] is double ){
+        _values[key] = double.tryParse(value.value.text);
+      }
     });
     return _values;
   }
