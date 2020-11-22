@@ -230,11 +230,11 @@ class PropertySheetController {
       _values[controller.key] = controller.value;
     });
     textControllers.forEach((key, value) {
-      if( valueTypes[key] is String ) {
+      if( valueTypes[key] == String ) {
         _values[key] = value.value.text;
-      } else if( valueTypes[key] is int ){
+      } else if( valueTypes[key] == int ){
         _values[key] = int.tryParse(value.value.text);
-      } else if( valueTypes[key] is double ){
+      } else if( valueTypes[key] == double ){
         _values[key] = double.tryParse(value.value.text);
       }
     });
