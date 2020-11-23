@@ -53,7 +53,7 @@ class _PropertySheetState extends State<PropertySheet> {
       List<TableRow> properties, PropertySheetController controller) {
     value.forEach((key, value) {
       if (value is Map) {
-        PropertySheetController myController = PropertySheetController();
+        PropertySheetController myController = PropertySheetController(stripEmptyValues: controller.stripEmptyValues);
         myController.key = key;
         myController._values = value;
         controller.controllers.add(myController);
@@ -78,7 +78,7 @@ class _PropertySheetState extends State<PropertySheet> {
             ),
           );
         } else if (value is List) {
-          PropertySheetController listController = PropertySheetController();
+          PropertySheetController listController = PropertySheetController(stripEmptyValues: controller.stripEmptyValues);
           listController.isListController = true;
           listController.key = key;
           controller.controllers.add(listController);
@@ -86,7 +86,7 @@ class _PropertySheetState extends State<PropertySheet> {
             List<PropertySheet> sheets = [];
             int index = 0;
             value.forEach((element) {
-              PropertySheetController myController = PropertySheetController();
+              PropertySheetController myController = PropertySheetController(stripEmptyValues: controller.stripEmptyValues);
               myController.index = index;
               myController._values = element;
               listController.controllers.add(myController);
@@ -263,6 +263,9 @@ class _PropertySheetState extends State<PropertySheet> {
 }
 
 class PropertySheetController {
+
+  PropertySheetController({this.stripEmptyValues = false});
+
   final List<PropertySheetController> controllers = [];
   final List<TextEditingController> listTextControllers = [];
   final Map<String, TextEditingController> textControllers = {};
@@ -274,6 +277,8 @@ class PropertySheetController {
 
   bool isListController = false;
 
+  bool stripEmptyValues;
+
   _PropertySheetState _state;
 
   Map<String, Type> valueTypes = {};
@@ -283,23 +288,30 @@ class PropertySheetController {
   var listItemType;
 
   Map<String, dynamic> get value {
+    Map<String, dynamic> _retMap = _values;
+    if( stripEmptyValues ){
+      _retMap = {};
+    }
     controllers.forEach((controller) {
       if (controller.isListController) {
-        _values[controller.key] = controller.valueAsList;
+        _retMap[controller.key] = controller.valueAsList;
       } else {
-        _values[controller.key] = controller.value;
+        _retMap[controller.key] = controller.value;
       }
     });
     textControllers.forEach((key, value) {
-      if (valueTypes[key] == int) {
-        _values[key] = int.tryParse(value.value.text);
-      } else if (valueTypes[key] == double) {
-        _values[key] = double.tryParse(value.value.text);
-      } else {
-        _values[key] = value.value.text;
+      if (!stripEmptyValues || (value.value.text != null && value.value.text.isNotEmpty)) {
+        if (valueTypes[key] == int) {
+          _retMap[key] = int.tryParse(value.value.text);
+        } else if (valueTypes[key] == double) {
+          _retMap[key] = double.tryParse(value.value.text);
+        } else {
+          _retMap[key] = value.value.text;
+        }
       }
     });
-    return _values;
+
+    return _retMap;
   }
 
   List<dynamic> get valueAsList {

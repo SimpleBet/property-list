@@ -28,7 +28,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class MyHomePageState extends State<MyHomePage> {
-  PropertySheetController controller = PropertySheetController();
+  PropertySheetController controller = PropertySheetController(stripEmptyValues: true);
 
   @override
   Widget build(BuildContext context) {
