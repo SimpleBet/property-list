@@ -77,6 +77,55 @@ class _PropertySheetState extends State<PropertySheet> {
               ],
             ),
           );
+        } else if (value is List) {
+          PropertySheetController listController = PropertySheetController();
+          listController.isListController = true;
+          listController.key = key;
+          controller.controllers.add(listController);
+          if (value.isNotEmpty && value.first is Map) {
+            List<PropertySheet> sheets = [];
+            int index = 0;
+            value.forEach((element) {
+              PropertySheetController myController = PropertySheetController();
+              myController.index = index;
+              myController._values = element;
+              listController.controllers.add(myController);
+              sheets.add(PropertySheet(
+                title: 'index: $index',
+                controller: myController,
+              ));
+              index++;
+            });
+
+            valueCell = TableCell(
+                child: Column(
+              children: sheets,
+            ));
+          } else {
+            List<Widget> items = [];
+
+            value.forEach((element) {
+              listController.listItemType = element.runtimeType;
+
+              var textEditingController =
+                  TextEditingController(text: element?.toString());
+              listController.textControllers[key] = textEditingController;
+
+              items.add(
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                  child: TextField(
+                    controller: textEditingController,
+                  ),
+                ),
+              );
+            });
+
+            valueCell = TableCell(
+                child: Column(
+              children: items,
+            ));
+          }
         } else {
           var textEditingController =
               TextEditingController(text: value?.toString());
@@ -215,30 +264,59 @@ class _PropertySheetState extends State<PropertySheet> {
 
 class PropertySheetController {
   final List<PropertySheetController> controllers = [];
+  final List<TextEditingController> listTextControllers = [];
   final Map<String, TextEditingController> textControllers = {};
 
   Map<String, dynamic> _values = {};
+  List<dynamic> _list = [];
 
   String key;
+
+  bool isListController = false;
 
   _PropertySheetState _state;
 
   Map<String, Type> valueTypes = {};
 
+  int index;
+
+  var listItemType;
+
   Map<String, dynamic> get value {
     controllers.forEach((controller) {
-      _values[controller.key] = controller.value;
+      if (controller.isListController) {
+        _values[controller.key] = controller.valueAsList;
+      } else {
+        _values[controller.key] = controller.value;
+      }
     });
     textControllers.forEach((key, value) {
-      if( valueTypes[key] == int ){
+      if (valueTypes[key] == int) {
         _values[key] = int.tryParse(value.value.text);
-      } else if( valueTypes[key] == double ){
+      } else if (valueTypes[key] == double) {
         _values[key] = double.tryParse(value.value.text);
       } else {
         _values[key] = value.value.text;
       }
     });
     return _values;
+  }
+
+  List<dynamic> get valueAsList {
+    _list.clear();
+    controllers.forEach((controller) {
+      _list.add(controller.value);
+    });
+    listTextControllers.forEach((value) {
+      if (listItemType == int) {
+        _list.add(_values[key] = int.tryParse(value.value.text));
+      } else if (listItemType == double) {
+        _list.add(double.tryParse(value.value.text));
+      } else {
+        _list.add(_values[key] = value.value.text);
+      }
+    });
+    return _list;
   }
 
   initWith(Map<String, dynamic> map) {

@@ -101,7 +101,10 @@ const testData2= '''
 
 ''';
 const testData = '''
-{"widget": {
+{
+"numbers": [0,1,2],
+"letters": ["a", "b", "c"],
+"widget": {
     "debug": "on",
     "enable": true,
     "window": {
